@@ -6,26 +6,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
-    <title>Painel Admin </title>
+    <title>Painel Admin - DKTM JF</title>
     <style>
-        body { background: radial-gradient(circle at top, #1a202c 0%, #0a0a0a 100%); min-height: 100vh; color: white; font-family: 'Rajdhani', sans-serif; }
+        body { background: radial-gradient(circle at top, #1a0b2e 0%, #0a0510 100%); min-height: 100vh; color: white; font-family: 'Rajdhani', sans-serif; }
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .hidden-panel { display: none; }
-        select option { background-color: #1a202c; color: white; }
+        .hidden-panel { display: none !important; }
+        select option { background-color: #1a0b2e; color: white; }
         
+        /* Ajuste do campo de notas para celular e PC */
         .input-score { 
             background: rgba(0,0,0,0.8); 
-            border: 2px solid rgba(255,0,50,0.3); 
-            color: #ff0032; 
+            border: 2px solid rgba(124,58,237,0.3); 
+            color: #7c3aed; 
             font-weight: 900; 
             text-align: center; 
-            border-radius: 10px; 
-            width: 100px; 
-            padding: 10px; 
-            font-size: 1.2rem;
+            border-radius: 8px; 
+            width: 60px; /* Estreito no celular */
+            padding: 6px 2px; 
+            font-size: 1rem;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .input-score:focus { border-color: #ff0032; background: #000; box-shadow: 0 0 15px rgba(255,0,50,0.4); outline: none; }
+        .input-score:focus { border-color: #7c3aed; background: #000; box-shadow: 0 0 15px rgba(124,58,237,0.4); outline: none; }
+        
+        @media (min-width: 768px) {
+            .input-score {
+                width: 100px; /* Largo no PC */
+                padding: 10px;
+                font-size: 1.2rem;
+                border-radius: 10px;
+            }
+        }
         
         .input-dark {
             background: rgba(0,0,0,0.6);
@@ -37,25 +48,59 @@
             outline: none;
             transition: all 0.3s;
         }
-        .input-dark:focus { border-color: #ff0032; box-shadow: 0 0 10px rgba(255,0,50,0.3); }
-        
-        /* Estilo para focar no nome */
-        .input-name:focus { color: #ff0032; border-bottom: 2px solid #ff0032; }
+        .input-dark:focus { border-color: #7c3aed; box-shadow: 0 0 10px rgba(124,58,237,0.3); }
+        .input-name:focus { color: #7c3aed; border-bottom: 2px solid #7c3aed; }
+
+        .modal-overlay { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
+        .select-premium {
+            background: #1a0b2e;
+            border: 2px solid #7c3aed;
+            color: #d8b4fe;
+            border-radius: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
-<body class="p-2 md:p-8 flex flex-col items-center">
+<body class="p-2 md:p-8 flex flex-col items-center relative">
 
-    <div id="login-screen" class="glass p-10 rounded-3xl shadow-2xl max-w-sm w-full mt-20 text-center border-t-4 border-red-600">
+    <div id="config-modal" class="hidden-panel fixed inset-0 modal-overlay z-50 flex items-center justify-center p-4">
+        <div class="glass p-8 rounded-3xl max-w-2xl w-full border-t-4 border-purple-600 shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button onclick="closeConfig()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+            <h2 class="text-3xl font-black italic uppercase text-white mb-2"><i class="fas fa-cogs text-purple-500 mr-2"></i> Categorias do Clube</h2>
+            <p class="text-gray-400 text-sm tracking-widest uppercase mb-6">Adicione novas ou apague as existentes.</p>
+            
+            <div class="flex gap-2 mb-6">
+                <input type="text" id="nova-cat-input" placeholder="NOME DA CATEGORIA..." class="input-dark py-3 font-bold uppercase">
+                <button onclick="criarCategoria()" class="bg-green-600 hover:bg-green-500 text-white px-6 rounded-xl font-black transition-all">
+                    <i class="fas fa-plus"></i> ADD
+                </button>
+            </div>
+
+            <div id="categorias-list" class="flex flex-col gap-2 mb-6 overflow-y-auto pr-2 max-h-60">
+                </div>
+            
+            <button onclick="salvarConfigCategorias()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg mt-auto">
+                Confirmar Categorias Ativas
+            </button>
+        </div>
+    </div>
+
+    <div id="login-screen" class="glass p-10 rounded-3xl shadow-2xl max-w-sm w-full mt-20 text-center border-t-4 border-purple-600">
         <div class="mb-6">
-            <i class="fas fa-shield-alt text-5xl text-red-600 mb-4"></i>
-            <h1 class="text-3xl font-black uppercase italic">Acesso <span class="text-red-500">Restrito</span></h1>
-            <p class="text-gray-400 text-xs tracking-widest uppercase mt-2">Área Administrativa ALTM</p>
+            <i class="fas fa-shield-alt text-5xl text-purple-600 mb-4"></i>
+            <h1 class="text-3xl font-black uppercase italic">Acesso <span class="text-purple-500">Restrito</span></h1>
+            <p class="text-gray-400 text-xs tracking-widest uppercase mt-2">Painel de Controle DKTM</p>
         </div>
         <div class="space-y-4">
-            <!-- Adicionado onkeydown para detectar Enter -->
             <input type="email" id="email" placeholder="USUÁRIO" class="input-dark font-bold" onkeydown="checkLoginEnter(event)">
             <input type="password" id="password" placeholder="SENHA" class="input-dark font-bold" onkeydown="checkLoginEnter(event)">
-            <button onclick="handleLogin()" class="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg mt-4">
+            <button onclick="handleLogin()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-black py-4 rounded-xl uppercase tracking-widest transition-all shadow-lg mt-4">
                 Entrar
             </button>
             <p id="login-error" class="text-red-500 text-xs font-bold hidden mt-2">DADOS INCORRETOS!</p>
@@ -63,12 +108,15 @@
     </div>
 
     <div id="admin-panel" class="hidden-panel w-full max-w-6xl">
-        <div class="text-center mb-10 mt-4 flex justify-between items-center px-4">
+        <div class="text-center mb-10 mt-4 flex flex-col md:flex-row justify-between items-center gap-4 px-4">
             <div class="text-left">
-                <h1 class="text-3xl md:text-5xl font-black tracking-tighter uppercase italic">ADMIN <span class="text-red-500">ALTM</span></h1>
-                <p class="text-gray-400 text-sm md:text-base uppercase tracking-widest mt-1">Liga Regional 2026</p>
+                <h1 class="text-3xl md:text-5xl font-black tracking-tighter uppercase italic">ADMIN <span class="text-purple-500">DKTM</span></h1>
+                <p class="text-gray-400 text-sm md:text-base uppercase tracking-widest mt-1">Ranking por Mês - 2026</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button onclick="openConfig()" class="bg-purple-900/40 hover:bg-purple-800 text-purple-200 px-4 py-2 rounded-lg text-xs font-bold uppercase border border-purple-700 transition-colors">
+                    <i class="fas fa-list-ul mr-1"></i> Categorias
+                </button>
                 <button onclick="exportToJson()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase border border-gray-600">
                     <i class="fas fa-download mr-1"></i> Backup
                 </button>
@@ -80,28 +128,25 @@
 
         <div class="mb-8 px-2 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="glass p-6 rounded-3xl flex flex-col gap-2">
-                <label class="font-black uppercase text-xs text-red-500 tracking-widest">
-                    <i class="fas fa-filter"></i> 1. Escolha a Categoria
+                <label class="font-black uppercase text-xs text-purple-400 tracking-widest">
+                    <i class="fas fa-filter"></i> 1. Categoria do Atleta
                 </label>
-                <select id="categoriaSelect" onchange="render()" class="w-full p-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold text-lg focus:border-red-500 outline-none uppercase cursor-pointer">
-                </select>
+                <select id="categoriaSelect" onchange="render()" class="select-premium w-full p-3"></select>
             </div>
 
             <div class="glass p-6 rounded-3xl flex flex-col gap-2">
-                <label class="font-black uppercase text-xs text-green-500 tracking-widest">
-                    <i class="fas fa-calendar-alt"></i> 2. Escolha a Etapa para Lançar
+                <label class="font-black uppercase text-xs text-green-400 tracking-widest">
+                    <i class="fas fa-calendar-alt"></i> 2. Mês de Referência
                 </label>
-                <select id="etapaSelect" onchange="render()" class="w-full p-3 rounded-xl bg-black/60 border border-white/10 text-white font-bold text-lg focus:border-green-500 outline-none uppercase cursor-pointer">
-                    <option value="geral">VISUALIZAR GERAL (Apenas Leitura)</option>
-                </select>
+                <select id="etapaSelect" onchange="render()" class="select-premium w-full p-3"></select>
             </div>
         </div>
 
-        <div class="glass rounded-[2rem] overflow-hidden shadow-2xl mb-10 border-t-4 border-red-500">
+        <div class="glass rounded-[2rem] overflow-hidden shadow-2xl mb-10 border-t-4 border-purple-500">
             <div class="p-6 md:p-8 border-b border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5">
                 <div>
                     <h2 class="text-2xl font-black italic uppercase text-white" id="titulo-tabela">CATEGORIA</h2>
-                    <p id="subtitulo-tabela" class="text-xs text-gray-400 font-bold uppercase tracking-widest">Editando Ranking</p>
+                    <p id="subtitulo-tabela" class="text-xs text-gray-400 font-bold uppercase tracking-widest">Lançamento de Pontos</p>
                 </div>
                 
                 <button onclick="addAtleta()" class="w-full md:w-auto bg-green-600 hover:bg-green-500 text-white text-sm font-black py-3 px-6 rounded-xl transition-all uppercase shadow-lg flex items-center justify-center gap-2">
@@ -115,7 +160,7 @@
                         <tr class="text-gray-400 text-xs uppercase tracking-widest bg-black/40">
                             <th class="p-6 w-16">#</th>
                             <th class="p-6">NOME DO ATLETA</th>
-                            <th class="p-6 text-center" id="col-pontos-header">PONTUAÇÃO</th>
+                            <th class="p-6 text-center" id="col-pontos-header">PONTOS</th>
                             <th class="p-6 text-right">AÇÕES</th>
                         </tr>
                     </thead>
@@ -124,256 +169,179 @@
             </div>
             
             <div id="empty-state" class="hidden p-20 text-center text-gray-500 text-xl font-bold italic uppercase">
-                Esta categoria está vazia. Adicione atletas.
+                Crie uma categoria ou adicione atletas.
             </div>
 
             <div class="p-4 bg-black/40 text-center text-xs text-gray-500 uppercase font-bold tracking-widest">
-                Total nesta categoria: <span id="total-atletas">0</span>
+                Total nesta lista: <span id="total-atletas">0</span>
             </div>
         </div>
     </div>
 
     <script>
-    const STORAGE_KEY = 'ranking_altm_multi';
-    const LISTA_CATEGORIAS = [
-        "Absoluto A", "Absoluto B", "Absoluto C", "Absoluto D", "Absoluto E", "Absoluto F",
-        "Infantil (até 15 anos)", "Juvenil", "Feminino", "Adulto", "Sênior", "Veterano 50+"
-    ];
-
-    let sistema = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    LISTA_CATEGORIAS.forEach(cat => { if (!sistema[cat]) sistema[cat] = []; });
-
-    // --- FUNÇÕES DE INTERFACE (LOGIN) ---
-
-    function checkLoginEnter(event) {
-        if (event.key === "Enter") handleLogin();
-    }
-
-    function handleLogin() {
-        const e = document.getElementById('email').value;
-        const p = document.getElementById('password').value;
-        if(e === "admin" && p === "admin") {
-            sessionStorage.setItem('logged_altm', 'true');
-            showPanel();
-        } else {
-            document.getElementById('login-error').classList.remove('hidden');
-        }
-    }
-
-    function handleLogout() {
-        sessionStorage.removeItem('logged_altm');
-        location.reload();
-    }
-
-    function showPanel() {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('admin-panel').classList.remove('hidden-panel');
-        initPanel();
-    }
-
-    if(sessionStorage.getItem('logged_altm') === 'true') {
-        showPanel();
-    }
-
-    // --- FUNÇÕES DO PAINEL ---
-
-    function initPanel() {
-        const catSelect = document.getElementById('categoriaSelect');
-        catSelect.innerHTML = LISTA_CATEGORIAS.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-
-        const etapaSelect = document.getElementById('etapaSelect');
-        etapaSelect.innerHTML = '<option value="geral">VISUALIZAR GERAL (Apenas Leitura)</option>';
-        for(let i=1; i<=20; i++) {
-            let opt = document.createElement('option');
-            opt.value = `pts_${i}`;
-            opt.innerText = `Lançar Pontos - ETAPA ${i}`;
-            etapaSelect.appendChild(opt);
-        }
-        render();
-    }
-
-    function save() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(sistema));
-    }
-
-    function render() {
-        const catAtual = document.getElementById('categoriaSelect').value;
-        const etapaAtual = document.getElementById('etapaSelect').value;
-        const lista = sistema[catAtual];
-        const tbody = document.getElementById('ranking-table-body');
-        const emptyState = document.getElementById('empty-state');
+        const STORAGE_KEY = 'ranking_altm_multi';
+        const CONFIG_KEY = 'config_categorias_dktm';
+        const BASE_KEY = 'base_categorias_dktm';
         
-        document.getElementById('titulo-tabela').innerText = catAtual;
-        document.getElementById('subtitulo-tabela').innerText = etapaAtual === 'geral' ? "Visualizando Total Geral" : "Lançando Notas: " + document.getElementById('etapaSelect').options[document.getElementById('etapaSelect').selectedIndex].text;
-        document.getElementById('total-atletas').innerText = lista.length;
-        document.getElementById('col-pontos-header').innerText = etapaAtual === 'geral' ? "TOTAL ACUMULADO" : "PONTOS DA ETAPA";
+        const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
-        if (lista.length === 0) {
-            tbody.innerHTML = '';
-            emptyState.classList.remove('hidden');
-            return;
+        let sistema = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        let categoriasBase = JSON.parse(localStorage.getItem(BASE_KEY)) || [];
+        let categoriasAtivas = JSON.parse(localStorage.getItem(CONFIG_KEY)) || [];
+
+        categoriasAtivas.forEach(cat => { if (!sistema[cat]) sistema[cat] = []; });
+
+        // --- LOGIN ---
+        function checkLoginEnter(event) { if (event.key === "Enter") handleLogin(); }
+        function handleLogin() {
+            const e = document.getElementById('email').value, p = document.getElementById('password').value;
+            if(e === "admin" && p === "admin") { sessionStorage.setItem('logged_altm', 'true'); showPanel(); }
+            else { document.getElementById('login-error').classList.remove('hidden'); }
         }
-        emptyState.classList.add('hidden');
-
-        // --- INÍCIO DA LÓGICA DE DESEMPATE ADMIN CBTM ---
-        const podiumPorEtapa = {};
-        if (etapaAtual === 'geral') {
-            // Pega todas as etapas que já têm alguma nota lançada
-            let etapas = new Set();
-            lista.forEach(a => Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => etapas.add(k)));
-            
-            // Para cada etapa, descobre quais foram as notas de 1º, 2º e 3º lugar
-            etapas.forEach(etapa => {
-                let notas = lista.map(a => parseInt(a[etapa]) || 0).filter(n => n > 0);
-                notas = [...new Set(notas)].sort((a, b) => b - a);
-                podiumPorEtapa[etapa] = notas;
-            });
+        function handleLogout() { sessionStorage.removeItem('logged_altm'); location.reload(); }
+        function showPanel() {
+            document.getElementById('login-screen').classList.add('hidden-panel');
+            document.getElementById('admin-panel').classList.remove('hidden-panel');
+            initPanel();
+            if(categoriasAtivas.length === 0) openConfig();
         }
+        if(sessionStorage.getItem('logged_altm') === 'true') showPanel();
 
-        lista.sort((a, b) => {
-            const isGeral = etapaAtual === 'geral';
-            const valA = isGeral ? calcTotal(a) : (parseInt(a[etapaAtual]) || 0);
-            const valB = isGeral ? calcTotal(b) : (parseInt(b[etapaAtual]) || 0);
-            
-            // 1º Critério: Total de Pontos
-            if (valB !== valA) return valB - valA; 
-            
-            if (isGeral) {
-                let ouroA = 0, prataA = 0, bronzeA = 0, partA = 0;
-                let ouroB = 0, prataB = 0, bronzeB = 0, partB = 0;
-                
-                Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => {
-                    let nota = parseInt(a[k]) || 0;
-                    if(nota > 0) {
-                        partA++;
-                        if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === nota) ouroA++;
-                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === nota) prataA++;
-                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === nota) bronzeA++;
-                    }
-                });
-                
-                Object.keys(b).filter(k => k.startsWith('pts_')).forEach(k => {
-                    let nota = parseInt(b[k]) || 0;
-                    if(nota > 0) {
-                        partB++;
-                        if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === nota) ouroB++;
-                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === nota) prataB++;
-                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === nota) bronzeB++;
-                    }
-                });
-
-                // Critérios de desempate CBTM em cascata
-                if (ouroB !== ouroA) return ouroB - ouroA;         // 2º Critério: Mais Títulos (Ouro)
-                if (prataB !== prataA) return prataB - prataA;     // 3º Critério: Mais Vices (Prata)
-                if (bronzeB !== bronzeA) return bronzeB - bronzeA; // 4º Critério: Mais Bronzes
-                if (partB !== partA) return partB - partA;         // 5º Critério: Mais Participações
-            }
-
-            // 6º Critério: Ordem Alfabética (se empatar em absolutamente TUDO)
-            return a.nome.localeCompare(b.nome);
-        });
-        // --- FIM DA LÓGICA DE DESEMPATE ADMIN CBTM ---
-
-        tbody.innerHTML = lista.map((atleta, i) => {
-            const isGeral = etapaAtual === 'geral';
-            const valor = isGeral ? calcTotal(atleta) : (atleta[etapaAtual] || 0);
-            
-            let inputHtml = '';
-            if(isGeral) {
-                inputHtml = `<span class="text-2xl font-black text-gray-400 select-none">${valor}</span>`;
-            } else {
-                inputHtml = `<input type="number" 
-                    id="pts-${atleta.id}"
-                    value="${valor}" 
-                    onclick="this.select()"
-                    onfocus="this.select()"
-                    onchange="updateAtleta(${atleta.id}, '${etapaAtual}', this.value)" 
-                    class="input-score">`;
-            }
-
-            return `
-            <tr class="hover:bg-white/5 transition-colors group">
-                <td class="p-6 font-black italic text-xl text-gray-600">#${i + 1}</td>
-                <td class="p-6">
-                    <input type="text" 
-                        id="nome-${atleta.id}"
-                        onchange="updateAtleta(${atleta.id}, 'nome', this.value)" 
-                        onkeydown="checkNextField(event, ${atleta.id})"
-                        value="${atleta.nome}" 
-                        class="input-name bg-transparent border-none outline-none w-full text-white font-bold uppercase text-lg transition-colors focus:bg-white/5 p-2 rounded">
-                </td>
-                <td class="p-6 text-center">
-                    ${inputHtml}
-                </td>
-                <td class="p-6 text-right">
-                    <button onclick="deleteAtleta(${atleta.id})" class="text-gray-600 hover:text-red-500 p-2 transition-colors">
-                        <i class="fas fa-trash-alt text-lg"></i>
-                    </button>
-                </td>
-            </tr>`;
-        }).join('');
-    }
-
-    function checkNextField(event, id) {
-        if (event.key === "Enter") {
-            event.preventDefault(); 
-            const campoPontos = document.getElementById(`pts-${id}`);
-            if (campoPontos) {
-                campoPontos.focus();
+        // --- GESTÃO DE CATEGORIAS ---
+        function openConfig() { document.getElementById('config-modal').classList.remove('hidden-panel'); renderConfigList(); }
+        function closeConfig() { document.getElementById('config-modal').classList.add('hidden-panel'); }
+        function renderConfigList() {
+            const listaDiv = document.getElementById('categorias-list');
+            if(categoriasBase.length === 0) { listaDiv.innerHTML = `<p class="text-center text-gray-500 italic p-4">Nenhuma categoria cadastrada.</p>`; return; }
+            listaDiv.innerHTML = categoriasBase.map(cat => {
+                const isChecked = categoriasAtivas.includes(cat) ? 'checked' : '';
+                return `<div class="flex items-center justify-between p-3 border border-white/10 rounded-xl bg-black/40 hover:border-purple-500 transition-all">
+                    <label class="flex items-center gap-3 cursor-pointer flex-1">
+                        <input type="checkbox" value="${cat}" class="cat-checkbox w-5 h-5 accent-purple-600" ${isChecked}>
+                        <span class="text-white font-bold uppercase text-sm">${cat}</span>
+                    </label>
+                    <button onclick="apagarCategoria('${cat}')" class="text-red-500 hover:text-red-400 px-3 py-1 transition-all"><i class="fas fa-trash-alt"></i></button>
+                </div>`;
+            }).join('');
+        }
+        function criarCategoria() {
+            const input = document.getElementById('nova-cat-input'), val = input.value.trim().toUpperCase();
+            if(val && !categoriasBase.includes(val)) {
+                categoriasBase.push(val); categoriasAtivas.push(val);
+                localStorage.setItem(BASE_KEY, JSON.stringify(categoriasBase)); localStorage.setItem(CONFIG_KEY, JSON.stringify(categoriasAtivas));
+                if (!sistema[val]) sistema[val] = []; save(); input.value = ''; renderConfigList();
             }
         }
-    }
-
-    function calcTotal(atleta) {
-        return Object.keys(atleta)
-            .filter(k => k.startsWith('pts_'))
-            .reduce((acc, k) => acc + (parseInt(atleta[k]) || 0), 0);
-    }
-
-    function addAtleta() {
-        const catAtual = document.getElementById('categoriaSelect').value;
-        const novoId = Date.now();
-        sistema[catAtual].push({ id: novoId, nome: "NOVO ATLETA" });
-        save();
-        render();
-
-        setTimeout(() => {
-            const novoInput = document.getElementById(`nome-${novoId}`);
-            if(novoInput) {
-                novoInput.focus();
-                novoInput.select();
+        function apagarCategoria(cat) {
+            if(confirm(`Apagar "${cat}"?`)) {
+                categoriasBase = categoriasBase.filter(c => c !== cat); categoriasAtivas = categoriasAtivas.filter(c => c !== cat);
+                localStorage.setItem(BASE_KEY, JSON.stringify(categoriasBase)); localStorage.setItem(CONFIG_KEY, JSON.stringify(categoriasAtivas));
+                renderConfigList();
             }
-        }, 100);
-    }
-
-    function updateAtleta(id, campo, valor) {
-        const catAtual = document.getElementById('categoriaSelect').value;
-        const index = sistema[catAtual].findIndex(a => a.id === id);
-        if (index !== -1) {
-            sistema[catAtual][index][campo] = campo.startsWith('pts_') ? parseInt(valor) || 0 : valor;
-            save();
-            if(campo.startsWith('pts_')) render();
         }
-    }
+        function salvarConfigCategorias() {
+            const checkboxes = document.querySelectorAll('.cat-checkbox:checked');
+            categoriasAtivas = Array.from(checkboxes).map(cb => cb.value);
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(categoriasAtivas));
+            categoriasAtivas.forEach(cat => { if (!sistema[cat]) sistema[cat] = []; });
+            save(); closeConfig(); initPanel(); 
+        }
 
-    function deleteAtleta(id) {
-        if(confirm("Remover atleta desta categoria?")) {
-            const catAtual = document.getElementById('categoriaSelect').value;
-            sistema[catAtual] = sistema[catAtual].filter(a => a.id !== id);
-            save();
+        // --- PAINEL PRINCIPAL ---
+        function initPanel() {
+            const catSelect = document.getElementById('categoriaSelect');
+            catSelect.innerHTML = categoriasAtivas.length > 0 ? categoriasAtivas.map(cat => `<option value="${cat}">${cat}</option>`).join('') : '<option value="">-- SEM CATEGORIAS --</option>';
+
+            const etapaSelect = document.getElementById('etapaSelect');
+            let html = '<option value="geral" class="font-black text-purple-400">📊 VER RANKING GERAL</option>';
+            MESES.forEach((mes, i) => { html += `<option value="pts_${i}">✏️ Lançar: ${mes}</option>`; });
+            etapaSelect.innerHTML = html;
             render();
         }
-    }
 
-    function exportToJson() {
-        const dados = localStorage.getItem(STORAGE_KEY);
-        const blob = new Blob([dados], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `LIGA_ALTM_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
-        a.click();
-    }
-</script>
+        function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(sistema)); }
+        function calcTotal(atleta) { return Object.keys(atleta).filter(k => k.startsWith('pts_')).reduce((acc, k) => acc + (parseInt(atleta[k]) || 0), 0); }
+
+       function render() {
+            const catAtual = document.getElementById('categoriaSelect').value, etapaAtual = document.getElementById('etapaSelect').value;
+            const tbody = document.getElementById('ranking-table-body'), emptyState = document.getElementById('empty-state');
+            
+            if(!catAtual || !sistema[catAtual]) { tbody.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
+            const lista = sistema[catAtual], isGeral = etapaAtual === 'geral';
+
+            document.getElementById('titulo-tabela').innerText = catAtual;
+            document.getElementById('subtitulo-tabela').innerText = isGeral ? "Ranking Acumulado" : "Pontos de " + document.getElementById('etapaSelect').options[document.getElementById('etapaSelect').selectedIndex].text.replace('✏️ Lançar: ', '');
+            document.getElementById('total-atletas').innerText = lista.length;
+            document.getElementById('col-pontos-header').innerText = isGeral ? "TOTAL" : "PONTOS DO MÊS";
+
+            if (lista.length === 0) { tbody.innerHTML = ''; emptyState.classList.remove('hidden'); return; }
+            emptyState.classList.add('hidden');
+
+            // --- DESEMPATE CBTM ---
+            const podiumPorMes = {};
+            if (isGeral) {
+                MESES.forEach((_, i) => {
+                    const key = `pts_${i}`;
+                    let notas = lista.map(a => parseInt(a[key]) || 0).filter(n => n > 0);
+                    notas = [...new Set(notas)].sort((a, b) => b - a);
+                    podiumPorMes[key] = notas;
+                });
+            }
+
+            lista.sort((a, b) => {
+                const valA = isGeral ? calcTotal(a) : (parseInt(a[etapaAtual]) || 0), valB = isGeral ? calcTotal(b) : (parseInt(b[etapaAtual]) || 0);
+                if (valB !== valA) return valB - valA; 
+                if (isGeral) {
+                    let cA = {o:0, p:0, b:0, pa:0}, cB = {o:0, p:0, b:0, pa:0};
+                    MESES.forEach((_, i) => {
+                        const k = `pts_${i}`, nA = parseInt(a[k]) || 0, nB = parseInt(b[k]) || 0;
+                        if(nA > 0) { cA.pa++; if (podiumPorMes[k][0] === nA) cA.o++; else if (podiumPorMes[k][1] === nA) cA.p++; else if (podiumPorMes[k][2] === nA) cA.b++; }
+                        if(nB > 0) { cB.pa++; if (podiumPorMes[k][0] === nB) cB.o++; else if (podiumPorMes[k][1] === nB) cB.p++; else if (podiumPorMes[k][2] === nB) cB.b++; }
+                    });
+                    if (cB.o !== cA.o) return cB.o - cA.o; if (cB.p !== cA.p) return cB.p - cA.p; if (cB.b !== cA.b) return cB.b - cA.b;
+                }
+                return a.nome.localeCompare(b.nome);
+            });
+
+            tbody.innerHTML = lista.map((atleta, i) => {
+                const valor = isGeral ? calcTotal(atleta) : (atleta[etapaAtual] || 0);
+                
+                // Responsividade no texto da soma e centralização do input
+                let inputHtml = isGeral ? 
+                    `<span class="text-lg md:text-2xl font-black text-gray-400 select-none">${valor}</span>` : 
+                    `<input type="number" id="pts-${atleta.id}" value="${valor}" onclick="this.select()" onfocus="this.select()" onchange="updateAtleta(${atleta.id}, '${etapaAtual}', this.value)" class="input-score mx-auto block">`;
+                
+                // Responsividade nas células (p-2 no celular, p-6 no PC)
+                return `<tr class="hover:bg-white/5 transition-colors group border-b border-white/5">
+                    <td class="p-2 md:p-6 font-black italic text-lg md:text-xl text-gray-600 text-center">#${i + 1}</td>
+                    <td class="p-2 md:p-6">
+                        <input type="text" id="nome-${atleta.id}" onchange="updateAtleta(${atleta.id}, 'nome', this.value)" onkeydown="checkNextField(event, ${atleta.id})" value="${atleta.nome}" class="input-name bg-transparent border-none outline-none w-full text-white font-bold uppercase text-sm md:text-lg transition-colors focus:bg-white/5 p-1 md:p-2 rounded truncate">
+                    </td>
+                    <td class="p-2 md:p-6 text-center">${inputHtml}</td>
+                    <td class="p-2 md:p-6 text-right">
+                        <button onclick="deleteAtleta(${atleta.id})" class="text-gray-600 hover:text-red-500 p-2 transition-all">
+                            <i class="fas fa-trash-alt text-sm md:text-lg"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function checkNextField(event, id) { if (event.key === "Enter") { event.preventDefault(); const cp = document.getElementById(`pts-${id}`); if (cp) cp.focus(); } }
+        function addAtleta() {
+            const cat = document.getElementById('categoriaSelect').value; if(!cat) return;
+            const id = Date.now(); sistema[cat].push({ id, nome: "NOVO ATLETA" });
+            save(); render(); setTimeout(() => { const ni = document.getElementById(`nome-${id}`); if(ni) { ni.focus(); ni.select(); } }, 100);
+        }
+        function updateAtleta(id, campo, val) {
+            const cat = document.getElementById('categoriaSelect').value, idx = sistema[cat].findIndex(a => a.id === id);
+            if (idx !== -1) { sistema[cat][idx][campo] = campo.startsWith('pts_') ? parseInt(val) || 0 : val; save(); if(campo.startsWith('pts_')) render(); }
+        }
+        function deleteAtleta(id) { if(confirm("Remover atleta?")) { const cat = document.getElementById('categoriaSelect').value; sistema[cat] = sistema[cat].filter(a => a.id !== id); save(); render(); } }
+        function exportToJson() {
+            const dados = localStorage.getItem(STORAGE_KEY), blob = new Blob([dados], { type: "application/json" }), url = URL.createObjectURL(blob), a = document.createElement('a');
+            a.href = url; a.download = `DKTM_BACKUP_${new Date().toISOString().slice(0,10)}.json`; a.click();
+        }
+    </script>
 </body>
 </html>

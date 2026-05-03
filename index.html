@@ -6,32 +6,35 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
-    <title>Ranking Oficial </title>
+    <title>Ranking Oficial - DKTM JF</title>
     <style>
         body { 
-            background: linear-gradient(rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.96)), url('https://images.unsplash.com/photo-1534158914592-062992bbe900?q=80&w=1500');
+            background: linear-gradient(rgba(20, 10, 30, 0.95), rgba(10, 5, 15, 0.98)), url('https://images.unsplash.com/photo-1534158914592-062992bbe900?q=80&w=1500');
             background-size: cover; background-position: center; background-attachment: fixed;
             min-height: 100vh; color: white; font-family: 'Rajdhani', sans-serif;
         }
-        .cat-btn.active { background: #ff0032; color: white; border-color: #ff0032; box-shadow: 0 0 20px rgba(255, 0, 50, 0.4); }
+        .cat-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; box-shadow: 0 0 20px rgba(124, 58, 237, 0.4); }
         .gold-card { background: linear-gradient(180deg, #FFD700 0%, #B8860B 100%); color: black; }
         .silver-card { background: linear-gradient(180deg, #E0E0E0 0%, #808080 100%); color: black; }
         .bronze-card { background: linear-gradient(180deg, #CD7F32 0%, #8B4513 100%); color: white; }
-        .atleta-row { background: rgba(20, 20, 20, 0.9); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .atleta-row:hover { border-color: #ff0032; transform: scale(1.02); }
+        .atleta-row { background: rgba(20, 20, 20, 0.9); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .atleta-row:hover { border-color: #7c3aed; transform: scale(1.02); background: rgba(124, 58, 237, 0.05); }
         .cat-scroll::-webkit-scrollbar { height: 6px; }
-        .cat-scroll::-webkit-scrollbar-thumb { background: #ff0032; border-radius: 10px; }
+        .cat-scroll::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 10px; }
         
         .etapa-select {
-            background: rgba(0,0,0,0.8);
-            border: 1px solid #ff0032;
-            color: #ff0032;
-            padding: 5px 15px;
-            border-radius: 8px;
-            font-weight: bold;
+            background: #1a0b2e;
+            border: 2px solid #7c3aed;
+            color: #d8b4fe;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 800;
             text-transform: uppercase;
             outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
+        .etapa-select:focus { box-shadow: 0 0 10px rgba(124,58,237,0.4); }
 
         .admin-btn {
             position: fixed;
@@ -39,22 +42,22 @@
             right: 20px;
             width: 50px;
             height: 50px;
-            background: rgba(255, 0, 50, 0.1);
-            border: 1px solid #ff0032;
+            background: rgba(124, 58, 237, 0.1);
+            border: 1px solid #7c3aed;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #ff0032;
+            color: #7c3aed;
             transition: all 0.3s ease;
             z-index: 1000;
             cursor: pointer;
             text-decoration: none;
         }
         .admin-btn:hover {
-            background: #ff0032;
+            background: #7c3aed;
             color: white;
-            box-shadow: 0 0 20px rgba(255, 0, 50, 0.6);
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.6);
             transform: rotate(90deg);
         }
     </style>
@@ -67,15 +70,14 @@
 
     <div class="p-10 text-center animate-fade">
         <h1 class="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-none">
-            <span class="text-[#ff0032]">ALTM</span> RANKING
+            <span class="text-[#7c3aed]">DKTM</span> JF
         </h1>
-        <p class="text-gray-500 text-lg md:text-xl tracking-[0.6em] uppercase font-bold mt-4">Liga Regional 2026</p>
+        <p class="text-gray-400 text-lg md:text-xl tracking-[0.6em] uppercase font-bold mt-4">Ranking DKTM Tenis de Mesa - 2026</p>
     </div>
 
-    <div class="max-w-7xl mx-auto px-6 mb-4 flex justify-end">
-        <select id="select-etapa-visualizar" onchange="mudarEtapaVisualizacao()" class="etapa-select cursor-pointer">
-            <option value="geral">RANKING GERAL</option>
-        </select>
+    <div class="max-w-7xl mx-auto px-6 mb-4 flex justify-center md:justify-end">
+        <select id="select-etapa-visualizar" onchange="mudarEtapaVisualizacao()" class="etapa-select w-full md:w-auto">
+            </select>
     </div>
 
     <div class="max-w-7xl mx-auto mb-12 px-6">
@@ -83,36 +85,48 @@
     </div>
 
     <div class="text-center mb-10">
-        <h2 id="titulo-categoria" class="text-3xl md:text-5xl font-black uppercase italic border-b-4 border-[#ff0032] inline-block px-12 pb-2">...</h2>
-        <p id="subtitulo-etapa" class="text-gray-400 mt-2 font-bold uppercase tracking-widest text-sm">Classificação Geral</p>
+        <h2 id="titulo-categoria" class="text-3xl md:text-5xl font-black uppercase italic border-b-4 border-[#7c3aed] inline-block px-12 pb-2">...</h2>
+        <p id="subtitulo-etapa" class="text-gray-400 mt-2 font-bold uppercase tracking-widest text-sm">Aguardando...</p>
     </div>
 
-    <!-- PÓDIO RESPONSIVO: Flex-Col no Mobile -->
     <div id="podium" class="flex flex-col md:flex-row justify-center items-center md:items-end gap-6 md:gap-8 max-w-5xl mx-auto mb-20 px-4 min-h-[auto] md:h-80"></div>
 
     <div class="max-w-5xl mx-auto space-y-4 px-6" id="tabela-atletas"></div>
 
     <script>
-        const LISTA_CATEGORIAS = [
-            "Absoluto A", "Absoluto B", "Absoluto C", "Absoluto D", "Absoluto E", "Absoluto F",
-            "Infantil (até 15 anos)", "Juvenil", "Feminino", "Adulto", "Sênior", "Veterano 50+"
-        ];
-
-        let categoriaAtual = LISTA_CATEGORIAS[0];
+        const STORAGE_KEY = 'ranking_altm_multi';
+        const CONFIG_KEY = 'config_categorias_dktm';
+        const MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        
+        let LISTA_CATEGORIAS = JSON.parse(localStorage.getItem(CONFIG_KEY)) || [];
+        let categoriaAtual = LISTA_CATEGORIAS.length > 0 ? LISTA_CATEGORIAS[0] : "";
         let etapaAtualVisualizacao = "geral";
         let sistema = {};
 
+        // Inicia o Select de Meses
         const selectEtapa = document.getElementById('select-etapa-visualizar');
-        for(let i=1; i<=20; i++) {
-            let opt = document.createElement('option');
-            opt.value = i;
-            opt.innerText = `ETAPA ${i}`;
-            selectEtapa.appendChild(opt);
-        }
+        let htmlSelect = '<option value="geral">📊 VER RANKING GERAL ACUMULADO</option>';
+        MESES.forEach((mes, i) => {
+            htmlSelect += `<option value="pts_${i}">📅 Resultado de ${mes}</option>`;
+        });
+        selectEtapa.innerHTML = htmlSelect;
 
         function load() {
-            sistema = JSON.parse(localStorage.getItem('ranking_altm_multi')) || {};
+            let configsSalvas = JSON.parse(localStorage.getItem(CONFIG_KEY)) || [];
+            
+            // Atualiza as categorias dinamicamente se o admin alterar
+            if (JSON.stringify(LISTA_CATEGORIAS) !== JSON.stringify(configsSalvas)) {
+                LISTA_CATEGORIAS = configsSalvas;
+                if(!LISTA_CATEGORIAS.includes(categoriaAtual) && LISTA_CATEGORIAS.length > 0){
+                    categoriaAtual = LISTA_CATEGORIAS[0];
+                } else if (LISTA_CATEGORIAS.length === 0) {
+                    categoriaAtual = "";
+                }
+            }
+
+            sistema = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
             LISTA_CATEGORIAS.forEach(cat => { if(!sistema[cat]) sistema[cat] = []; });
+            
             renderMenu();
             renderRanking();
         }
@@ -124,8 +138,12 @@
 
         function renderMenu() {
             const menu = document.getElementById('menu-categorias');
+            if (LISTA_CATEGORIAS.length === 0) {
+                menu.innerHTML = '<span class="text-gray-500 italic uppercase font-bold text-sm">Nenhuma categoria criada no painel admin.</span>';
+                return;
+            }
             menu.innerHTML = LISTA_CATEGORIAS.map(cat => `
-                <button onclick="changeCat('${cat}')" class="cat-btn whitespace-nowrap px-8 py-4 rounded-2xl border-2 border-gray-800 font-black uppercase text-base transition-all ${cat === categoriaAtual ? 'active' : 'text-gray-500'}">
+                <button onclick="changeCat('${cat}')" class="cat-btn whitespace-nowrap px-8 py-4 rounded-2xl border-2 border-gray-800 font-black uppercase text-base transition-all ${cat === categoriaAtual ? 'active' : 'text-gray-500 hover:border-[#7c3aed]'}">
                     ${cat}
                 </button>
             `).join('');
@@ -137,68 +155,72 @@
             renderRanking();
         }
 
-       function renderRanking() {
+        function renderRanking() {
+            const podium = document.getElementById('podium');
+            const tabela = document.getElementById('tabela-atletas');
+
+            if (!categoriaAtual) {
+                document.getElementById('titulo-categoria').innerText = "SEM CATEGORIAS";
+                document.getElementById('subtitulo-etapa').innerText = "Crie uma categoria no painel de controle.";
+                podium.innerHTML = '';
+                tabela.innerHTML = '';
+                return;
+            }
+
+            const isGeral = etapaAtualVisualizacao === 'geral';
             document.getElementById('titulo-categoria').innerText = categoriaAtual;
-            document.getElementById('subtitulo-etapa').innerText = etapaAtualVisualizacao === 'geral' ? 'Classificação Geral' : `Resultado da Etapa ${etapaAtualVisualizacao}`;
+            
+            if (isGeral) {
+                document.getElementById('subtitulo-etapa').innerText = 'Classificação Geral Acumulada';
+            } else {
+                const selectEl = document.getElementById('select-etapa-visualizar');
+                document.getElementById('subtitulo-etapa').innerText = selectEl.options[selectEl.selectedIndex].text.replace('📅 Resultado de ', 'Desempenho em ');
+            }
 
             let listaOriginal = sistema[categoriaAtual] || [];
             
-            // --- INÍCIO DA LÓGICA DE DESEMPATE CBTM ---
-            // Descobre quais foram as notas de 1º, 2º e 3º em CADA etapa disputada
-            const podiumPorEtapa = {};
-            if (etapaAtualVisualizacao === 'geral') {
-                let etapas = new Set();
-                listaOriginal.forEach(a => Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => etapas.add(k)));
-                
-                etapas.forEach(etapa => {
-                    let notas = listaOriginal.map(a => parseInt(a[etapa]) || 0).filter(n => n > 0);
-                    // Remove duplicatas e ordena da maior nota para a menor
+            // --- LÓGICA DE DESEMPATE CBTM (POR MÊS) ---
+            const podiumPorMes = {};
+            if (isGeral) {
+                MESES.forEach((_, i) => {
+                    const key = `pts_${i}`;
+                    let notas = listaOriginal.map(a => parseInt(a[key]) || 0).filter(n => n > 0);
                     notas = [...new Set(notas)].sort((a, b) => b - a);
-                    podiumPorEtapa[etapa] = notas; // notas[0]=Ouro, notas[1]=Prata, notas[2]=Bronze
+                    podiumPorMes[key] = notas;
                 });
             }
 
-            // Calcula o total, e quantas "medalhas" e participações o atleta tem
             let listaProcessada = listaOriginal.map(atleta => {
-                let pts = 0;
-                let ouro = 0, prata = 0, bronze = 0, participacoes = 0;
+                let ptsTotal = 0, ouro = 0, prata = 0, bronze = 0, participacoes = 0;
 
-                if (etapaAtualVisualizacao === 'geral') {
-                    Object.keys(atleta).filter(k => k.startsWith('pts_')).forEach(k => {
-                        let notaDaEtapa = parseInt(atleta[k]) || 0;
-                        if (notaDaEtapa > 0) {
-                            pts += notaDaEtapa;
-                            participacoes++; // Conta que ele participou desta etapa
-                            
-                            // Verifica se a nota dele foi Ouro, Prata ou Bronze nesta etapa
-                            if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === notaDaEtapa) ouro++;
-                            else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === notaDaEtapa) prata++;
-                            else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === notaDaEtapa) bronze++;
+                if (isGeral) {
+                    MESES.forEach((_, i) => {
+                        const k = `pts_${i}`;
+                        let nota = parseInt(atleta[k]) || 0;
+                        if (nota > 0) {
+                            ptsTotal += nota;
+                            participacoes++;
+                            if (podiumPorMes[k] && podiumPorMes[k][0] === nota) ouro++;
+                            else if (podiumPorMes[k] && podiumPorMes[k][1] === nota) prata++;
+                            else if (podiumPorMes[k] && podiumPorMes[k][2] === nota) bronze++;
                         }
                     });
                 } else {
-                    pts = parseInt(atleta[`pts_${etapaAtualVisualizacao}`]) || 0;
+                    ptsTotal = parseInt(atleta[etapaAtualVisualizacao]) || 0;
                 }
-                return { nome: atleta.nome, pontos: pts, ouro, prata, bronze, participacoes };
+                return { nome: atleta.nome, pontos: ptsTotal, ouro, prata, bronze, participacoes };
             });
 
-            // Ordena usando os Critérios Oficiais da CBTM
             listaProcessada = listaProcessada.filter(a => a.pontos > 0).sort((a, b) => {
-                if (b.pontos !== a.pontos) return b.pontos - a.pontos; // 1º Critério: Total de Pontos
-                
-                if (etapaAtualVisualizacao === 'geral') {
-                    if (b.ouro !== a.ouro) return b.ouro - a.ouro;             // 2º Critério: Mais Ouros (Títulos)
-                    if (b.prata !== a.prata) return b.prata - a.prata;         // 3º Critério: Mais Vices
-                    if (b.bronze !== a.bronze) return b.bronze - a.bronze;     // 4º Critério: Mais Bronzes
-                    if (b.participacoes !== a.participacoes) return b.participacoes - a.participacoes; // 5º Critério: Participações
+                if (b.pontos !== a.pontos) return b.pontos - a.pontos;
+                if (isGeral) {
+                    if (b.ouro !== a.ouro) return b.ouro - a.ouro;
+                    if (b.prata !== a.prata) return b.prata - a.prata;
+                    if (b.bronze !== a.bronze) return b.bronze - a.bronze;
+                    if (b.participacoes !== a.participacoes) return b.participacoes - a.participacoes;
                 }
-                
-                return a.nome.localeCompare(b.nome); // 6º Critério: Ordem Alfabética
+                return a.nome.localeCompare(b.nome);
             });
-            // --- FIM DA LÓGICA DE DESEMPATE ---
-
-            const podium = document.getElementById('podium');
-            const tabela = document.getElementById('tabela-atletas');
 
             if(listaProcessada.length > 0) {
                 const p1 = listaProcessada[0], p2 = listaProcessada[1], p3 = listaProcessada[2], p4 = listaProcessada[3];
@@ -233,13 +255,20 @@
                 podium.innerHTML = '<p class="text-gray-600 font-bold uppercase tracking-widest text-2xl text-center col-span-3 w-full">Aguardando resultados...</p>'; 
             }
 
-            tabela.innerHTML = listaProcessada.map((atleta, i) => `
-                <div class="atleta-row p-6 flex items-center justify-between shadow-xl transition hover:border-[#ff0032]">
+            tabela.innerHTML = listaProcessada.map((atleta, i) => {
+                // Lógica de cores baseada na posição (Ouro, Prata, Bronze, Padrão)
+                let corPosicao = 'text-gray-600'; // 5º lugar em diante (Cinza Escuro)
+                if (i === 0) corPosicao = 'text-[#FFD700] drop-shadow-[0_0_10px_rgba(255,215,0,0.5)]'; // 1º Ouro
+                else if (i === 1) corPosicao = 'text-[#E0E0E0] drop-shadow-[0_0_10px_rgba(224,224,224,0.5)]'; // 2º Prata
+                else if (i === 2 || i === 3) corPosicao = 'text-[#CD7F32] drop-shadow-[0_0_10px_rgba(205,127,50,0.5)]'; // 3º e 4º Bronze
+
+                return `
+                <div class="atleta-row p-6 flex items-center justify-between shadow-xl transition hover:border-[#7c3aed]">
                     <div class="flex items-center gap-8">
-                        <span class="w-10 text-3xl font-black italic ${i < 3 ? 'text-[#ff0032]' : 'text-gray-700'}">${i+1}</span>
+                        <span class="w-10 text-3xl font-black italic ${corPosicao}">${i+1}</span>
                         <div>
                             <h4 class="font-black uppercase text-xl md:text-2xl text-white tracking-tighter">${atleta.nome}</h4>
-                            <p class="text-xs text-[#ff0032] font-black tracking-[0.3em] uppercase">Membro Federado</p>
+                            <p class="text-xs text-[#7c3aed] font-black tracking-[0.3em] uppercase">Atleta DKTM</p>
                         </div>
                     </div>
                     <div class="text-right">
@@ -247,7 +276,8 @@
                         <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">PONTOS</p>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         setInterval(load, 5000); 
