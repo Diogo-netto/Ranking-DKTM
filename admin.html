@@ -203,7 +203,7 @@
             document.getElementById('login-screen').classList.add('hidden-panel');
             document.getElementById('admin-panel').classList.remove('hidden-panel');
             initPanel();
-            if(categoriasAtivas.length === 0) openConfig();
+            // Removi a regra que forçava a abertura. Agora o modal só abre se clicar no botão.
         }
         if(sessionStorage.getItem('logged_altm') === 'true') showPanel();
 
