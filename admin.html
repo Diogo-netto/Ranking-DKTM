@@ -134,197 +134,246 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'ranking_altm_multi';
-        const LISTA_CATEGORIAS = [
-            "Absoluto A", "Absoluto B", "Absoluto C", "Absoluto D", "Absoluto E", "Absoluto F",
-            "Infantil (até 15 anos)", "Juvenil", "Feminino", "Adulto", "Sênior", "Veterano 50+"
-        ];
+    const STORAGE_KEY = 'ranking_altm_multi';
+    const LISTA_CATEGORIAS = [
+        "Absoluto A", "Absoluto B", "Absoluto C", "Absoluto D", "Absoluto E", "Absoluto F",
+        "Infantil (até 15 anos)", "Juvenil", "Feminino", "Adulto", "Sênior", "Veterano 50+"
+    ];
 
-        let sistema = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-        LISTA_CATEGORIAS.forEach(cat => { if (!sistema[cat]) sistema[cat] = []; });
+    let sistema = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    LISTA_CATEGORIAS.forEach(cat => { if (!sistema[cat]) sistema[cat] = []; });
 
-        // --- FUNÇÕES DE INTERFACE (LOGIN) ---
+    // --- FUNÇÕES DE INTERFACE (LOGIN) ---
 
-        function checkLoginEnter(event) {
-            if (event.key === "Enter") handleLogin();
-        }
+    function checkLoginEnter(event) {
+        if (event.key === "Enter") handleLogin();
+    }
 
-        function handleLogin() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('password').value;
-            if(e === "admin" && p === "admin") {
-                sessionStorage.setItem('logged_altm', 'true');
-                showPanel();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-            }
-        }
-
-        function handleLogout() {
-            sessionStorage.removeItem('logged_altm');
-            location.reload();
-        }
-
-        function showPanel() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('admin-panel').classList.remove('hidden-panel');
-            initPanel();
-        }
-
-        if(sessionStorage.getItem('logged_altm') === 'true') {
+    function handleLogin() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(e === "admin" && p === "admin") {
+            sessionStorage.setItem('logged_altm', 'true');
             showPanel();
+        } else {
+            document.getElementById('login-error').classList.remove('hidden');
         }
+    }
 
-        // --- FUNÇÕES DO PAINEL ---
+    function handleLogout() {
+        sessionStorage.removeItem('logged_altm');
+        location.reload();
+    }
 
-        function initPanel() {
-            const catSelect = document.getElementById('categoriaSelect');
-            catSelect.innerHTML = LISTA_CATEGORIAS.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    function showPanel() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-panel').classList.remove('hidden-panel');
+        initPanel();
+    }
 
-            const etapaSelect = document.getElementById('etapaSelect');
-            etapaSelect.innerHTML = '<option value="geral">VISUALIZAR GERAL (Apenas Leitura)</option>';
-            for(let i=1; i<=20; i++) {
-                let opt = document.createElement('option');
-                opt.value = `pts_${i}`;
-                opt.innerText = `Lançar Pontos - ETAPA ${i}`;
-                etapaSelect.appendChild(opt);
-            }
-            render();
+    if(sessionStorage.getItem('logged_altm') === 'true') {
+        showPanel();
+    }
+
+    // --- FUNÇÕES DO PAINEL ---
+
+    function initPanel() {
+        const catSelect = document.getElementById('categoriaSelect');
+        catSelect.innerHTML = LISTA_CATEGORIAS.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+        const etapaSelect = document.getElementById('etapaSelect');
+        etapaSelect.innerHTML = '<option value="geral">VISUALIZAR GERAL (Apenas Leitura)</option>';
+        for(let i=1; i<=20; i++) {
+            let opt = document.createElement('option');
+            opt.value = `pts_${i}`;
+            opt.innerText = `Lançar Pontos - ETAPA ${i}`;
+            etapaSelect.appendChild(opt);
         }
+        render();
+    }
 
-        function save() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(sistema));
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sistema));
+    }
+
+    function render() {
+        const catAtual = document.getElementById('categoriaSelect').value;
+        const etapaAtual = document.getElementById('etapaSelect').value;
+        const lista = sistema[catAtual];
+        const tbody = document.getElementById('ranking-table-body');
+        const emptyState = document.getElementById('empty-state');
+        
+        document.getElementById('titulo-tabela').innerText = catAtual;
+        document.getElementById('subtitulo-tabela').innerText = etapaAtual === 'geral' ? "Visualizando Total Geral" : "Lançando Notas: " + document.getElementById('etapaSelect').options[document.getElementById('etapaSelect').selectedIndex].text;
+        document.getElementById('total-atletas').innerText = lista.length;
+        document.getElementById('col-pontos-header').innerText = etapaAtual === 'geral' ? "TOTAL ACUMULADO" : "PONTOS DA ETAPA";
+
+        if (lista.length === 0) {
+            tbody.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            return;
         }
+        emptyState.classList.add('hidden');
 
-        function render() {
-            const catAtual = document.getElementById('categoriaSelect').value;
-            const etapaAtual = document.getElementById('etapaSelect').value;
-            const lista = sistema[catAtual];
-            const tbody = document.getElementById('ranking-table-body');
-            const emptyState = document.getElementById('empty-state');
+        // --- INÍCIO DA LÓGICA DE DESEMPATE ADMIN CBTM ---
+        const podiumPorEtapa = {};
+        if (etapaAtual === 'geral') {
+            // Pega todas as etapas que já têm alguma nota lançada
+            let etapas = new Set();
+            lista.forEach(a => Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => etapas.add(k)));
             
-            document.getElementById('titulo-tabela').innerText = catAtual;
-            document.getElementById('subtitulo-tabela').innerText = etapaAtual === 'geral' ? "Visualizando Total Geral" : "Lançando Notas: " + document.getElementById('etapaSelect').options[document.getElementById('etapaSelect').selectedIndex].text;
-            document.getElementById('total-atletas').innerText = lista.length;
-            document.getElementById('col-pontos-header').innerText = etapaAtual === 'geral' ? "TOTAL ACUMULADO" : "PONTOS DA ETAPA";
-
-            if (lista.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            emptyState.classList.add('hidden');
-
-            lista.sort((a, b) => {
-                const valA = etapaAtual === 'geral' ? calcTotal(a) : (parseInt(a[etapaAtual]) || 0);
-                const valB = etapaAtual === 'geral' ? calcTotal(b) : (parseInt(b[etapaAtual]) || 0);
-                if (valB !== valA) return valB - valA;
-                return a.nome.localeCompare(b.nome);
+            // Para cada etapa, descobre quais foram as notas de 1º, 2º e 3º lugar
+            etapas.forEach(etapa => {
+                let notas = lista.map(a => parseInt(a[etapa]) || 0).filter(n => n > 0);
+                notas = [...new Set(notas)].sort((a, b) => b - a);
+                podiumPorEtapa[etapa] = notas;
             });
-
-            tbody.innerHTML = lista.map((atleta, i) => {
-                const isGeral = etapaAtual === 'geral';
-                const valor = isGeral ? calcTotal(atleta) : (atleta[etapaAtual] || 0);
-                
-                let inputHtml = '';
-                if(isGeral) {
-                    inputHtml = `<span class="text-2xl font-black text-gray-400 select-none">${valor}</span>`;
-                } else {
-                    // ID único para focar depois
-                    inputHtml = `<input type="number" 
-                        id="pts-${atleta.id}"
-                        value="${valor}" 
-                        onclick="this.select()"
-                        onfocus="this.select()"
-                        onchange="updateAtleta(${atleta.id}, '${etapaAtual}', this.value)" 
-                        class="input-score">`;
-                }
-
-                return `
-                <tr class="hover:bg-white/5 transition-colors group">
-                    <td class="p-6 font-black italic text-xl text-gray-600">#${i + 1}</td>
-                    <td class="p-6">
-                        <input type="text" 
-                            id="nome-${atleta.id}"
-                            onchange="updateAtleta(${atleta.id}, 'nome', this.value)" 
-                            onkeydown="checkNextField(event, ${atleta.id})"
-                            value="${atleta.nome}" 
-                            class="input-name bg-transparent border-none outline-none w-full text-white font-bold uppercase text-lg transition-colors focus:bg-white/5 p-2 rounded">
-                    </td>
-                    <td class="p-6 text-center">
-                        ${inputHtml}
-                    </td>
-                    <td class="p-6 text-right">
-                        <button onclick="deleteAtleta(${atleta.id})" class="text-gray-600 hover:text-red-500 p-2 transition-colors">
-                            <i class="fas fa-trash-alt text-lg"></i>
-                        </button>
-                    </td>
-                </tr>`;
-            }).join('');
         }
 
-        // Função para pular do Nome para Pontos com Enter
-        function checkNextField(event, id) {
-            if (event.key === "Enter") {
-                event.preventDefault(); // Impede que o Enter faça outra coisa
-                const campoPontos = document.getElementById(`pts-${id}`);
-                if (campoPontos) {
-                    campoPontos.focus();
-                }
+        lista.sort((a, b) => {
+            const isGeral = etapaAtual === 'geral';
+            const valA = isGeral ? calcTotal(a) : (parseInt(a[etapaAtual]) || 0);
+            const valB = isGeral ? calcTotal(b) : (parseInt(b[etapaAtual]) || 0);
+            
+            // 1º Critério: Total de Pontos
+            if (valB !== valA) return valB - valA; 
+            
+            if (isGeral) {
+                let ouroA = 0, prataA = 0, bronzeA = 0, partA = 0;
+                let ouroB = 0, prataB = 0, bronzeB = 0, partB = 0;
+                
+                Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => {
+                    let nota = parseInt(a[k]) || 0;
+                    if(nota > 0) {
+                        partA++;
+                        if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === nota) ouroA++;
+                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === nota) prataA++;
+                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === nota) bronzeA++;
+                    }
+                });
+                
+                Object.keys(b).filter(k => k.startsWith('pts_')).forEach(k => {
+                    let nota = parseInt(b[k]) || 0;
+                    if(nota > 0) {
+                        partB++;
+                        if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === nota) ouroB++;
+                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === nota) prataB++;
+                        else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === nota) bronzeB++;
+                    }
+                });
+
+                // Critérios de desempate CBTM em cascata
+                if (ouroB !== ouroA) return ouroB - ouroA;         // 2º Critério: Mais Títulos (Ouro)
+                if (prataB !== prataA) return prataB - prataA;     // 3º Critério: Mais Vices (Prata)
+                if (bronzeB !== bronzeA) return bronzeB - bronzeA; // 4º Critério: Mais Bronzes
+                if (partB !== partA) return partB - partA;         // 5º Critério: Mais Participações
+            }
+
+            // 6º Critério: Ordem Alfabética (se empatar em absolutamente TUDO)
+            return a.nome.localeCompare(b.nome);
+        });
+        // --- FIM DA LÓGICA DE DESEMPATE ADMIN CBTM ---
+
+        tbody.innerHTML = lista.map((atleta, i) => {
+            const isGeral = etapaAtual === 'geral';
+            const valor = isGeral ? calcTotal(atleta) : (atleta[etapaAtual] || 0);
+            
+            let inputHtml = '';
+            if(isGeral) {
+                inputHtml = `<span class="text-2xl font-black text-gray-400 select-none">${valor}</span>`;
+            } else {
+                inputHtml = `<input type="number" 
+                    id="pts-${atleta.id}"
+                    value="${valor}" 
+                    onclick="this.select()"
+                    onfocus="this.select()"
+                    onchange="updateAtleta(${atleta.id}, '${etapaAtual}', this.value)" 
+                    class="input-score">`;
+            }
+
+            return `
+            <tr class="hover:bg-white/5 transition-colors group">
+                <td class="p-6 font-black italic text-xl text-gray-600">#${i + 1}</td>
+                <td class="p-6">
+                    <input type="text" 
+                        id="nome-${atleta.id}"
+                        onchange="updateAtleta(${atleta.id}, 'nome', this.value)" 
+                        onkeydown="checkNextField(event, ${atleta.id})"
+                        value="${atleta.nome}" 
+                        class="input-name bg-transparent border-none outline-none w-full text-white font-bold uppercase text-lg transition-colors focus:bg-white/5 p-2 rounded">
+                </td>
+                <td class="p-6 text-center">
+                    ${inputHtml}
+                </td>
+                <td class="p-6 text-right">
+                    <button onclick="deleteAtleta(${atleta.id})" class="text-gray-600 hover:text-red-500 p-2 transition-colors">
+                        <i class="fas fa-trash-alt text-lg"></i>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function checkNextField(event, id) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            const campoPontos = document.getElementById(`pts-${id}`);
+            if (campoPontos) {
+                campoPontos.focus();
             }
         }
+    }
 
-        function calcTotal(atleta) {
-            return Object.keys(atleta)
-                .filter(k => k.startsWith('pts_'))
-                .reduce((acc, k) => acc + (parseInt(atleta[k]) || 0), 0);
+    function calcTotal(atleta) {
+        return Object.keys(atleta)
+            .filter(k => k.startsWith('pts_'))
+            .reduce((acc, k) => acc + (parseInt(atleta[k]) || 0), 0);
+    }
+
+    function addAtleta() {
+        const catAtual = document.getElementById('categoriaSelect').value;
+        const novoId = Date.now();
+        sistema[catAtual].push({ id: novoId, nome: "NOVO ATLETA" });
+        save();
+        render();
+
+        setTimeout(() => {
+            const novoInput = document.getElementById(`nome-${novoId}`);
+            if(novoInput) {
+                novoInput.focus();
+                novoInput.select();
+            }
+        }, 100);
+    }
+
+    function updateAtleta(id, campo, valor) {
+        const catAtual = document.getElementById('categoriaSelect').value;
+        const index = sistema[catAtual].findIndex(a => a.id === id);
+        if (index !== -1) {
+            sistema[catAtual][index][campo] = campo.startsWith('pts_') ? parseInt(valor) || 0 : valor;
+            save();
+            if(campo.startsWith('pts_')) render();
         }
+    }
 
-        function addAtleta() {
+    function deleteAtleta(id) {
+        if(confirm("Remover atleta desta categoria?")) {
             const catAtual = document.getElementById('categoriaSelect').value;
-            const novoId = Date.now();
-            sistema[catAtual].push({ id: novoId, nome: "NOVO ATLETA" });
+            sistema[catAtual] = sistema[catAtual].filter(a => a.id !== id);
             save();
             render();
-
-            // Focar automaticamente no campo de nome do novo atleta
-            setTimeout(() => {
-                const novoInput = document.getElementById(`nome-${novoId}`);
-                if(novoInput) {
-                    novoInput.focus();
-                    novoInput.select();
-                }
-            }, 100); // Pequeno delay para garantir que o HTML renderizou
         }
+    }
 
-        function updateAtleta(id, campo, valor) {
-            const catAtual = document.getElementById('categoriaSelect').value;
-            const index = sistema[catAtual].findIndex(a => a.id === id);
-            if (index !== -1) {
-                sistema[catAtual][index][campo] = campo.startsWith('pts_') ? parseInt(valor) || 0 : valor;
-                save();
-                if(campo.startsWith('pts_')) render();
-            }
-        }
-
-        function deleteAtleta(id) {
-            if(confirm("Remover atleta desta categoria?")) {
-                const catAtual = document.getElementById('categoriaSelect').value;
-                sistema[catAtual] = sistema[catAtual].filter(a => a.id !== id);
-                save();
-                render();
-            }
-        }
-
-        function exportToJson() {
-            const dados = localStorage.getItem(STORAGE_KEY);
-            const blob = new Blob([dados], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `LIGA_ALTM_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-        }
-    </script>
+    function exportToJson() {
+        const dados = localStorage.getItem(STORAGE_KEY);
+        const blob = new Blob([dados], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `LIGA_ALTM_BACKUP_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+</script>
 </body>
 </html>

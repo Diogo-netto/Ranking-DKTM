@@ -137,25 +137,65 @@
             renderRanking();
         }
 
-        function renderRanking() {
+       function renderRanking() {
             document.getElementById('titulo-categoria').innerText = categoriaAtual;
             document.getElementById('subtitulo-etapa').innerText = etapaAtualVisualizacao === 'geral' ? 'Classificação Geral' : `Resultado da Etapa ${etapaAtualVisualizacao}`;
 
             let listaOriginal = sistema[categoriaAtual] || [];
             
+            // --- INÍCIO DA LÓGICA DE DESEMPATE CBTM ---
+            // Descobre quais foram as notas de 1º, 2º e 3º em CADA etapa disputada
+            const podiumPorEtapa = {};
+            if (etapaAtualVisualizacao === 'geral') {
+                let etapas = new Set();
+                listaOriginal.forEach(a => Object.keys(a).filter(k => k.startsWith('pts_')).forEach(k => etapas.add(k)));
+                
+                etapas.forEach(etapa => {
+                    let notas = listaOriginal.map(a => parseInt(a[etapa]) || 0).filter(n => n > 0);
+                    // Remove duplicatas e ordena da maior nota para a menor
+                    notas = [...new Set(notas)].sort((a, b) => b - a);
+                    podiumPorEtapa[etapa] = notas; // notas[0]=Ouro, notas[1]=Prata, notas[2]=Bronze
+                });
+            }
+
+            // Calcula o total, e quantas "medalhas" e participações o atleta tem
             let listaProcessada = listaOriginal.map(atleta => {
                 let pts = 0;
+                let ouro = 0, prata = 0, bronze = 0, participacoes = 0;
+
                 if (etapaAtualVisualizacao === 'geral') {
-                    pts = Object.keys(atleta)
-                            .filter(k => k.startsWith('pts_'))
-                            .reduce((s, k) => s + (parseInt(atleta[k]) || 0), 0);
+                    Object.keys(atleta).filter(k => k.startsWith('pts_')).forEach(k => {
+                        let notaDaEtapa = parseInt(atleta[k]) || 0;
+                        if (notaDaEtapa > 0) {
+                            pts += notaDaEtapa;
+                            participacoes++; // Conta que ele participou desta etapa
+                            
+                            // Verifica se a nota dele foi Ouro, Prata ou Bronze nesta etapa
+                            if (podiumPorEtapa[k] && podiumPorEtapa[k][0] === notaDaEtapa) ouro++;
+                            else if (podiumPorEtapa[k] && podiumPorEtapa[k][1] === notaDaEtapa) prata++;
+                            else if (podiumPorEtapa[k] && podiumPorEtapa[k][2] === notaDaEtapa) bronze++;
+                        }
+                    });
                 } else {
                     pts = parseInt(atleta[`pts_${etapaAtualVisualizacao}`]) || 0;
                 }
-                return { nome: atleta.nome, pontos: pts };
+                return { nome: atleta.nome, pontos: pts, ouro, prata, bronze, participacoes };
             });
 
-            listaProcessada = listaProcessada.filter(a => a.pontos > 0).sort((a, b) => b.pontos - a.pontos);
+            // Ordena usando os Critérios Oficiais da CBTM
+            listaProcessada = listaProcessada.filter(a => a.pontos > 0).sort((a, b) => {
+                if (b.pontos !== a.pontos) return b.pontos - a.pontos; // 1º Critério: Total de Pontos
+                
+                if (etapaAtualVisualizacao === 'geral') {
+                    if (b.ouro !== a.ouro) return b.ouro - a.ouro;             // 2º Critério: Mais Ouros (Títulos)
+                    if (b.prata !== a.prata) return b.prata - a.prata;         // 3º Critério: Mais Vices
+                    if (b.bronze !== a.bronze) return b.bronze - a.bronze;     // 4º Critério: Mais Bronzes
+                    if (b.participacoes !== a.participacoes) return b.participacoes - a.participacoes; // 5º Critério: Participações
+                }
+                
+                return a.nome.localeCompare(b.nome); // 6º Critério: Ordem Alfabética
+            });
+            // --- FIM DA LÓGICA DE DESEMPATE ---
 
             const podium = document.getElementById('podium');
             const tabela = document.getElementById('tabela-atletas');
@@ -163,7 +203,6 @@
             if(listaProcessada.length > 0) {
                 const p1 = listaProcessada[0], p2 = listaProcessada[1], p3 = listaProcessada[2], p4 = listaProcessada[3];
                 
-                // FORCEI "flex-col" no container e "w-full" nos cards para ficarem EMPILHADOS no celular
                 podium.innerHTML = `
                     ${p1 ? `<div class="gold-card w-full md:w-1/3 rounded-[2rem] md:rounded-t-[2rem] flex flex-col items-center justify-center p-6 min-h-[180px] md:h-72 shadow-[0_0_50px_rgba(255,215,0,0.3)] z-10 relative transition hover:scale-110 order-1 md:order-2 border-4 md:border-0 border-yellow-400 mb-4 md:mb-0">
                         <i class="fas fa-crown text-3xl mb-2"></i>
